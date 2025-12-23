@@ -2308,6 +2308,14 @@ body.modalOpen{ overflow:hidden; }
   // Keep zoom readout correct
   updateZoomUI();
 
+// If iOS supports sharing, label download buttons as "Share" for clarity
+if (canNativeShare()){
+  const d1 = $("downloadCurrentBtn");
+  const d2 = $("mDownloadCurrentBtn");
+  if(d1) d1.textContent = "Share";
+  if(d2) d2.textContent = "Share";
+}
+
   // ---- Export (exact 1080x1920) ----
   async function renderSlideToCanvas(slideHtml){
     const off = document.createElement("div");
@@ -2358,6 +2366,31 @@ body.modalOpen{ overflow:hidden; }
     return canvas;
   }
 
+
+
+// ---- iOS Share Sheet (uses Web Share API when available) ----
+function isIOS(){
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+function canNativeShare(){
+  return !!navigator.share && isIOS();
+}
+async function shareCanvasIOS(canvas, filename){
+  const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
+  if(!blob) throw new Error("Failed to create PNG blob");
+  const file = new File([blob], filename, { type: "image/png" });
+  try{
+    await navigator.share({
+      files: [file],
+      title: "Strava Year in Review",
+      text: "Check out my Strava Year in Review 👟"
+    });
+  } catch(err){
+    // User cancelled or share not available — ignore
+    console.debug("Share cancelled or failed", err);
+  }
+}
+
   function downloadCanvas(canvas, filename){
     const link = document.createElement("a");
     link.download = filename;
@@ -2371,15 +2404,23 @@ body.modalOpen{ overflow:hidden; }
     return `strava-year-in-review-${year}-${String(idx+1).padStart(2,"0")}-${label}.png`;
   }
 
-  $("downloadCurrentBtn").addEventListener("click", async () => {
-    if(!slides.length) return;
-    setStatus(`Rendering slide ${currentIndex+1}/${slides.length}…`);
-    const canvas = await renderSlideToCanvas(slides[currentIndex]);
-    downloadCanvas(canvas, slideFileName(currentIndex));
-    setStatus(`Downloaded slide ${currentIndex+1}.`);
-  });
+  
+$("downloadCurrentBtn").addEventListener("click", async () => {
+  if(!slides.length) return;
+  setStatus(`Rendering slide ${currentIndex+1}/${slides.length}…`);
+  const canvas = await renderSlideToCanvas(slides[currentIndex]);
+  const filename = slideFileName(currentIndex);
 
-  // ---- Mobile action bar mirrors download buttons ----
+  if (canNativeShare()){
+    await shareCanvasIOS(canvas, filename);
+    setStatus("Shared via iOS share sheet.");
+  } else {
+    downloadCanvas(canvas, filename);
+    setStatus(`Downloaded slide ${currentIndex+1}.`);
+  }
+});
+
+// ---- Mobile action bar mirrors download buttons ----
   if($("mDownloadCurrentBtn")){
     $("mDownloadCurrentBtn").addEventListener("click", () => $("downloadCurrentBtn").click());
   }
