@@ -1,0 +1,2442 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Strava Year in Review — 10+ Story Slides + PNG Export</title>
+
+  <!-- Export -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <style>
+    :root{
+      --strava:#FC4C02;
+      --stravaRgb:252,76,2;
+      --bg0:#071018;
+      --bg1:#071822;
+      --bg2:#1b070c;
+      --text:#ffffff;
+      --muted:rgba(255,255,255,.78);
+      --muted2:rgba(255,255,255,.56);
+      --card:rgba(255,255,255,.07);
+      --border:rgba(255,255,255,.14);
+      --shadow: 0 18px 70px rgba(0,0,0,.55);
+
+      /* Derived (default) */
+      --stravaA08: rgba(252,76,2,.08);
+      --stravaA11: rgba(252,76,2,.11);
+      --stravaA12: rgba(252,76,2,.12);
+      --stravaA16: rgba(252,76,2,.16);
+      --stravaA20: rgba(252,76,2,.20);
+      --stravaA22: rgba(252,76,2,.22);
+      --stravaA30: rgba(252,76,2,.30);
+      --stravaA35: rgba(252,76,2,.35);
+      --stravaA62: rgba(252,76,2,.62);
+      --stravaA75: rgba(252,76,2,.75);
+      --stravaA95: rgba(252,76,2,.95);
+      --stravaA98: rgba(252,76,2,.98);
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background:
+        radial-gradient(1200px 800px at 20% 10%, var(--stravaA20), transparent 55%),
+        radial-gradient(900px 700px at 70% 40%, rgba(255,255,255,.07), transparent 50%),
+        #05070c;
+      color:var(--text);
+      overflow-x:hidden;
+    }
+
+    header{
+      padding:18px 16px 10px;
+      max-width:1400px;
+      margin:0 auto;
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+    }
+    .dot{
+      width:12px; height:12px; border-radius:999px;
+      background:var(--strava);
+      box-shadow:0 0 0 6px var(--stravaA12);
+      margin-top:8px;
+      flex:0 0 auto;
+    }
+    h1{
+      margin:0;
+      font-size:18px;
+      line-height:1.15;
+      letter-spacing:.2px;
+    }
+    .sub{
+      margin:6px 0 0;
+      color:var(--muted2);
+      font-size:13px;
+      line-height:1.4;
+      max-width:1100px;
+    }
+
+    .wrap{
+      max-width:1400px;
+      margin:0 auto;
+      padding:0 16px 20px;
+      display:grid;
+      grid-template-columns: 380px 1fr;
+      gap:14px;
+      align-items:start;
+    }
+
+    .panel{
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      padding:14px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      position:sticky;
+      top:12px;
+    }
+    .panel h2{
+      margin:0 0 10px;
+      font-size:12px;
+      letter-spacing:.7px;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.80);
+    }
+    label{
+      font-size:12px;
+      color:var(--muted2);
+      display:block;
+      margin-bottom:6px;
+    }
+    input[type="file"], select, input[type="text"]{
+      width:100%;
+      padding:10px 11px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.25);
+      color:var(--text);
+      outline:none;
+    }
+    .grid2ctl{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .btns{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    button{
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      font-weight:700;
+      font-size:13px;
+      transition: transform .05s ease, background .15s ease, border-color .15s ease;
+    }
+    button.primary{
+      background: linear-gradient(135deg, var(--strava), var(--stravaA62));
+      border-color: var(--stravaA35);
+    }
+    button:active{ transform: translateY(1px); }
+    button:disabled{ opacity:.5; cursor:not-allowed; }
+
+    /* Zoom controls (preview) */
+    .zoomCtl{ display:flex; gap:8px; align-items:center; }
+    .zoomBtn{
+      padding:8px 10px;
+      border-radius:12px;
+      font-weight:900;
+      font-size:13px;
+      line-height:1;
+      min-width:42px;
+    }
+    .zoomReadout{
+      font-size:12px;
+      color:var(--muted2);
+      min-width:64px;
+      text-align:right;
+      letter-spacing:.2px;
+    }
+    .hint{
+      margin:10px 0 0;
+      font-size:12px;
+      color:var(--muted2);
+      line-height:1.45;
+    }
+    .status{
+      margin-top:10px;
+      font-size:12px;
+      color:rgba(255,255,255,.86);
+      padding:10px 12px;
+      background:rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      min-height:44px;
+      white-space:pre-line;
+    }
+
+    /* Preview takes the whole remaining screen */
+    .preview{
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      display:flex;
+      flex-direction:column;
+      height: calc(100vh - 24px);
+      min-height: 0;
+      overflow:hidden;
+    }
+    .previewTop{
+      padding:8px 10px 6px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .previewTop .title{
+      font-weight:900;
+      font-size:12px;
+      letter-spacing:.7px;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.82);
+    }
+    .nav{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .meta{
+      color:var(--muted2);
+      font-size:12px;
+      margin-left:6px;
+    }
+    .stage{
+      overflow:hidden;
+      flex:1;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:2px;
+      position:relative;
+      background:
+        radial-gradient(800px 500px at 25% 15%, var(--stravaA12), transparent 55%),
+        radial-gradient(800px 500px at 70% 60%, rgba(255,255,255,.06), transparent 55%),
+        rgba(0,0,0,.10);
+    }
+    /* Minimal zoom overlay inside preview */
+    .zoomOverlay{
+      position:absolute;
+      right:14px;
+      bottom:14px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      z-index:3;
+      pointer-events:auto;
+    }
+    .zoomMini{
+      width:44px;
+      height:44px;
+      border-radius:999px;
+      padding:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:950;
+      font-size:18px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.34);
+      backdrop-filter: blur(10px);
+      box-shadow:0 16px 44px rgba(0,0,0,.35);
+    }
+    .zoomMini:disabled{ opacity:.45; cursor:not-allowed; }
+
+
+    /* Story canvas */
+    .story{
+      width:1080px;
+      height:1920px;
+      border-radius:52px;
+      overflow:hidden;
+      position:relative;
+      box-shadow: 0 30px 90px rgba(0,0,0,.55);
+      border:1px solid rgba(255,255,255,.10);
+      transform-origin:center center;
+      will-change: transform;
+    }
+
+    /* Common story styling */
+    .bg{
+      position:absolute; inset:0;
+      background:
+        radial-gradient(1200px 900px at 18% 12%, var(--stravaA20), transparent 58%),
+        radial-gradient(1000px 800px at 74% 58%, rgba(255,255,255,.08), transparent 60%),
+        linear-gradient(160deg, var(--bg1), var(--bg0));
+    }
+    .bg.red{
+      background:
+        radial-gradient(1200px 900px at 20% 12%, var(--stravaA22), transparent 60%),
+        radial-gradient(1000px 800px at 76% 50%, rgba(255,255,255,.08), transparent 60%),
+        linear-gradient(160deg, #2b0a10, var(--bg2));
+    }
+    .stripe{
+      position:absolute;
+      left:-160px;
+      top:260px;
+      width:1800px;
+      height:260px;
+      transform: rotate(-10deg);
+      background: var(--stravaA11);
+      border-top:1px solid var(--stravaA22);
+      border-bottom:1px solid var(--stravaA16);
+    }
+    .topbar{
+      position:absolute; left:64px; right:64px; top:64px;
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:14px 18px;
+      border-radius:999px;
+      background:rgba(0,0,0,.30);
+      border:1px solid rgba(255,255,255,.14);
+      backdrop-filter: blur(12px);
+    }
+    .badge .pill{
+      width:10px; height:10px; border-radius:999px;
+      background:var(--strava);
+      box-shadow:0 0 0 6px var(--stravaA16);
+    }
+    .badge .txt{
+      display:flex; flex-direction:column;
+      line-height:1.05;
+    }
+    .badge .txt b{
+      font-size:14px; letter-spacing:.55px;
+      text-transform:uppercase;
+    }
+    .badge .txt span{
+      font-size:11px;
+      color:var(--muted2);
+      letter-spacing:.25px;
+    }
+    .yearMark{
+      font-weight:900;
+      font-size:22px;
+      letter-spacing:1px;
+      color:rgba(255,255,255,.86);
+      padding:10px 14px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.22);
+    }
+
+    .content{
+      position:absolute;
+      left:64px; right:64px;
+      top:206px; bottom:88px;
+      display:flex;
+      flex-direction:column;
+      gap:22px;
+    }
+
+    .content{ z-index:2; }
+
+
+    .heroTitle{
+      font-size:86px;
+      line-height:0.96;
+      margin:0;
+      letter-spacing:-1.2px;
+    }
+    .heroTitle span{ display:block; color:rgba(255,255,255,.90); }
+    .heroTitle em{ display:block; color:var(--strava); font-style:normal; }
+    .heroSub{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:36px;
+      line-height:1.25;
+      max-width:980px;
+    }
+
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:18px;
+    }
+    .grid3{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:16px;
+    }
+
+    /* Responsive grid that wraps nicely (3-up on wide screens, 2/1 on smaller) */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap:16px;
+    }
+
+    /* Force vertical stack (3 rows) */
+    .stack3{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:16px;
+    }
+
+    .card{
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:28px;
+      padding:22px 22px;
+      backdrop-filter: blur(12px);
+    }
+    .stat .k{
+      font-size:15px;
+      color:var(--muted2);
+      letter-spacing:.65px;
+      text-transform:uppercase;
+      margin-bottom:10px;
+    }
+    .stat .v{
+      font-size:78px;
+      font-weight:950;
+      letter-spacing:-1px;
+      line-height:1;
+      margin-bottom:8px;
+    }
+    .stat .s{
+      font-size:24px;
+      color:var(--muted);
+      line-height:1.25;
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .li{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:22px;
+      border-radius:22px;
+      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .li .left{
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+    .rank{
+      font-weight:950;
+      font-size:20px;
+      color:rgba(255,255,255,.80);
+      width:56px;
+      text-align:center;
+      padding:12px 0;
+      border-radius:16px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      flex:0 0 auto;
+    }
+    .sport b{ font-size:28px; letter-spacing:.2px; }
+    .sport span{ font-size:16px; color:var(--muted2); display:block; margin-top:3px; }
+    .metric{
+      font-weight:950;
+      font-size:34px;
+      color:rgba(255,255,255,.92);
+      letter-spacing:-.3px;
+      text-align:right;
+      min-width:160px;
+    }
+
+    /* Sport icon chip */
+    .ico{
+      width:56px;
+      height:56px;
+      border-radius:16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      flex:0 0 auto;
+      box-shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+    .ico svg{ display:block; width:26px; height:26px; }
+
+    /* BIG charts */
+    .chartWrap{ display:flex; flex-direction:column; gap:14px; }
+    .chartTitle{
+      display:flex; align-items:flex-end; justify-content:space-between; gap:10px;
+      padding-bottom:2px;
+    }
+    .chartTitle b{ font-size:26px; letter-spacing:.2px; }
+    .chartTitle span{ font-size:14px; color:var(--muted2); }
+
+    .bars{
+      height: 1040px;
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+      align-items:end;
+      padding:18px 12px 54px;
+      border-radius:34px;
+      background: rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.10);
+      position:relative;
+      overflow:visible;
+    }
+    .bar{
+      width:100%;
+      border-radius:20px 20px 12px 12px;
+      background: linear-gradient(180deg, var(--stravaA98), var(--stravaA30));
+      position:relative;
+      min-height:16px;
+      border:1px solid var(--stravaA35);
+    }
+    .bar::after{
+      content: attr(data-label);
+      position:absolute;
+      left:50%;
+      bottom:-52px;
+      transform:translateX(-50%);
+      font-size:18px;
+      color:rgba(255,255,255,.72);
+      letter-spacing:.25px;
+    }
+    .bar::before{
+      content: attr(data-val);
+      position:absolute;
+      left:50%;
+      top:-40px;
+      transform:translateX(-50%);
+      font-size:20px;
+      font-weight:900;
+      color:rgba(255,255,255,.90);
+      white-space:nowrap;
+    }
+
+    /* Simple “dot line” spark */
+    .spark{
+      height:240px;
+      border-radius:28px;
+      background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.10);
+      position:relative;
+      overflow:hidden;
+      padding:16px;
+    }
+    .spark svg{ width:100%; height:100%; display:block; }
+    .spark .label{
+      position:absolute;
+      left:18px;
+      top:14px;
+      font-size:12px;
+      letter-spacing:.65px;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.70);
+    }
+
+    /* Cover photo */
+    .photo{
+      width:100%;
+      height:640px;
+      border-radius:36px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.18);
+      position:relative;
+    }
+    .photo img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      object-position:center;
+      display:block;
+      filter: contrast(1.05) saturate(1.08);
+      transform: scale(1.03);
+    }
+
+    /* Export-safe photo crop: use a background layer instead of <img> (prevents html2canvas stretch) */
+    .photoBg{
+      position:absolute;
+      inset:0;
+      background-size:cover;
+      background-position:center;
+      transform: scale(1.03);
+      filter: contrast(1.05) saturate(1.08);
+    }
+
+    .photo .overlay{
+      position:absolute; inset:0;
+      background: linear-gradient(180deg, rgba(0,0,0,.0), rgba(0,0,0,.55) 65%, rgba(0,0,0,.84));
+    }
+    .photo .name{
+      position:absolute;
+      left:26px; right:26px; bottom:22px;
+      font-size:44px;
+      font-weight:950;
+      letter-spacing:-.8px;
+      line-height:1.02;
+      text-shadow:0 18px 50px rgba(0,0,0,.55);
+    }
+    .smallCaps{
+      text-transform:uppercase;
+      letter-spacing:.65px;
+      font-weight:900;
+      font-size:17px;
+      color:rgba(255,255,255,.74);
+      margin-top:8px;
+    }
+    .card.glow{
+      box-shadow:
+        0 22px 70px rgba(0,0,0,.45),
+        0 0 0 1px rgba(255,255,255,.06) inset;
+      background: rgba(0,0,0,.18);
+      border-color: rgba(255,255,255,.14);
+    }
+
+    .footer{
+      position:absolute;
+      left:64px; right:64px; bottom:44px;
+      display:flex; justify-content:space-between; align-items:center;
+      color:rgba(255,255,255,.70);
+      font-size:14px;
+      letter-spacing:.25px;
+    }
+    .footer .tag{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:12px 14px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.22);
+    }
+    .footer .tag i{
+      width:8px; height:8px; border-radius:999px; background:var(--strava);
+      display:inline-block;
+    }
+
+    /* Mobile bottom action bar (keeps Download visible) */
+    .mobileBar{
+      display:none;
+      gap:10px;
+      padding:10px;
+      border-top:1px solid rgba(255,255,255,.08);
+      background:rgba(0,0,0,.30);
+      backdrop-filter: blur(10px);
+    }
+    @media (max-width: 600px){
+      .mobileBar{
+        display:flex;
+        position: sticky;
+        bottom: 0;
+        z-index: 4;
+      }
+      .panel{ border-radius:14px; }
+    }
+
+    /* Mobile-first preview: keep the story fully visible without scrolling */
+    @media (max-width: 600px){
+      header{ padding:12px 12px 8px; }
+      .sub{ display:none; }
+      .wrap{ padding:0 12px 14px; }
+      .previewTop{ padding:10px 10px 8px; }
+      .preview{ height: calc(100vh - 16px); }
+      .stage{ padding:8px; }
+      .panel{ padding:12px; }
+    }
+
+    /* Small screens */
+    @media (max-width: 1100px){
+      .wrap{ grid-template-columns:1fr; }
+      .panel{ position:relative; top:auto; }
+      .preview{ min-height: 70vh; }
+    }
+  
+    /* ---- How to Use modal + slider ---- */
+    .modalOverlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.62);
+      backdrop-filter: blur(8px);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:50;
+    }
+    .modalOverlay.open{ display:flex; }
+
+
+    .modalHeader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
+    .modalHeader .left{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width:0;
+    }
+    .modalHeader b{
+      font-size:14px;
+      letter-spacing:.7px;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.86);
+    }
+    .modalHeader span{
+      font-size:12px;
+      color:var(--muted2);
+      line-height:1.35;
+    }
+    .modalClose{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      padding:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:950;
+      font-size:18px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+    }
+
+    .howWrap{
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow:auto;
+    }
+    .howRail{
+      position:relative;
+      overflow:hidden;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.05);
+    }
+    .howTrack{
+      display:flex;
+      transition: transform .35s ease;
+      will-change: transform;
+      touch-action: pan-y;
+    }
+    .howSlide{
+      flex:0 0 100%;
+      padding:16px;
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:14px;
+      align-items:stretch;
+      min-height: 380px;
+    }
+    @media (max-width: 760px){
+      .howSlide{ grid-template-columns: 1fr; min-height: 520px; }
+    }
+
+    .howStep{
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.22);
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .howStepTop{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .howNum{
+      width:42px; height:42px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:950;
+      font-size:16px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      flex:0 0 auto;
+    }
+    .howTxt b{
+      display:block;
+      font-size:18px;
+      letter-spacing:.2px;
+      margin-bottom:6px;
+    }
+    .howTxt p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.45;
+    }
+
+    .howTip{
+      font-size:12px;
+      color:var(--muted2);
+      line-height:1.45;
+      border-top:1px solid rgba(255,255,255,.08);
+      padding-top:10px;
+    }
+
+    .howShot{
+      border-radius:18px;
+      border:1px dashed rgba(255,255,255,.22);
+      background:rgba(0,0,0,.18);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:14px;
+      min-height: 340px;
+      position:relative;
+      overflow:hidden;
+    }
+    .howShot .ph{
+      text-align:center;
+      color:rgba(255,255,255,.70);
+      font-weight:850;
+      letter-spacing:.2px;
+      line-height:1.35;
+      font-size:13px;
+      padding:10px 12px;
+      border-radius:14px;
+      background:rgba(0,0,0,.28);
+      border:1px solid rgba(255,255,255,.10);
+    }
+
+    .howNav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .howNav .left, .howNav .right{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .howDots{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:center;
+      flex:1;
+    }
+    .howDot{
+      width:9px; height:9px;
+      border-radius:999px;
+      background:rgba(255,255,255,.22);
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .howDot.active{
+      background:var(--strava);
+      box-shadow:0 0 0 5px var(--stravaA12);
+      border-color: rgba(255,255,255,.18);
+    }
+    .howMiniNote{
+      font-size:12px;
+      color:var(--muted2);
+      text-align:center;
+      margin-top:2px;
+    }
+
+  
+/* ===== How to Use (simple) ===== */
+.modalOverlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); align-items:center; justify-content:center; padding:16px; z-index:9999; }
+.modalOverlay.open{ display:flex; }
+    .modal{
+      width:min(980px, 100%);
+      max-height: min(86vh, 920px);
+      overflow:hidden;
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(5,7,12,.88);
+      box-shadow: 0 24px 90px rgba(0,0,0,.65);
+      backdrop-filter: blur(14px);
+      display:flex;
+      flex-direction:column;
+    }
+	.modalHeader{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(0,0,0,.08); }
+.modalTitle{ font-weight:700; font-size:16px; }
+.modalClose{ border:0; background:transparent; font-size:18px; cursor:pointer; line-height:1; padding:8px; border-radius:10px; }
+.modalClose:hover{ background:rgba(0,0,0,.06); }
+.modalBody{ padding:16px; overflow:auto; }
+body.modalOpen{ overflow:hidden; }
+
+.howSimple{ display:flex; flex-direction:column; gap:14px; }
+.howStepCard{ border:1px solid rgba(0,0,0,.10); border-radius:14px; padding:14px; }
+.howStepTop{ display:flex; gap:12px; align-items:flex-start; margin-bottom:12px; }
+.howStepNum{ width:28px; height:28px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:700; background:rgba(0,0,0,.06); flex:0 0 auto; }
+.howStepText{ font-size:14px; line-height:1.45; opacity:.92; }
+.howLink{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; background: rgba(0,0,0,.06); padding: 2px 6px; border-radius: 8px; }
+
+.howShot a{ display:block; border-radius:12px; overflow:hidden; border:1px solid rgba(0,0,0,.08); }
+.howShot img{ width:100%; height:100%; display:block; }
+</style>
+</head>
+
+<body>
+<header>
+  <div class="dot"></div>
+  <div>
+    <h1>Strava Year in Review     <button id="howToBtn">How to Use</button>
+</h1>
+
+  </div>
+</header>
+
+<div class="wrap">
+  <aside class="panel">
+    <h2>1) Load data</h2>
+    <div style="margin-bottom:10px">
+      <label>Strava activities CSV</label>
+      <input id="csvFile" type="file" accept=".csv,text/csv" />
+    </div>
+
+    <div class="grid2ctl" style="margin-bottom:10px">
+      <div>
+        <label>Year</label>
+        <select id="yearSelect" disabled></select>
+      </div>
+      <div>
+        <label>Units</label>
+        <select id="unitSelect">
+          <option value="metric" selected>Metric (km, m)</option>
+          <option value="imperial">Imperial (mi, ft)</option>
+        </select>
+
+	</div>
+    </div>
+
+    <div style="margin-bottom:10px">
+      <label>Color palette</label>
+      <select id="paletteSelect">
+        <option value="strava" selected>Strava Orange (default)</option>
+        <option value="ocean">Ocean Blue</option>
+        <option value="purple">Purple Night</option>
+        <option value="neon">Neon Lime</option>
+        <option value="sunrise">Sunrise</option>
+        <option value="mono">Monochrome</option>
+        <option value="teal">Teal</option>
+        <option value="pink">Pink</option>
+        <option value="gold">Gold</option>
+        <option value="slate">Slate</option>
+      </select>
+    </div>
+    <div style="margin-bottom:10px">
+      <label>Display name (cover)</label>
+      <input id="nameInput" type="text" value="Your Year in Sport" />
+    </div>
+
+    <div style="margin-bottom:6px">
+      <label>Cover photo</label>
+      <input id="photoFile" type="file" accept="image/*" />
+    </div>
+
+    <h2 style="margin-top:16px">2) Generate & Export</h2>
+    <div class="btns">
+      <button class="primary" id="generateBtn" disabled>Generate slides</button>
+      <button id="downloadCurrentBtn" disabled>Download current</button>
+      <button id="downloadAllBtn" disabled>Download all</button>
+    </div>
+
+    <p class="hint">
+      Notes:
+      <br>• We ignore flagged activities if “Flagged” exists.
+      <br>• Distance assumed km (typical Strava export). If yours is meters, tell me and I’ll adjust.
+      <br>• Pace/HR slides appear only if relevant columns exist in your CSV.
+    </p>
+
+    <div class="status" id="status">Load a CSV to begin.</div>
+  </aside>
+
+  <main class="preview">
+    <div class="previewTop">
+      <div class="title">Preview</div>
+      <div class="nav">
+        <button id="prevBtn" disabled>◀ Prev</button>
+        <button id="nextBtn" disabled>Next ▶</button>
+        
+<span class="meta" id="slideMeta" style="display:none">—</span>
+      </div>
+    </div>
+
+    <div class="stage" id="stage">
+      <div id="storyMount"></div>
+      <div class="zoomOverlay" aria-label="Preview zoom">
+        <button class="zoomMini" id="zoomOutBtn" disabled title="Zoom out">−</button>
+        <button class="zoomMini" id="zoomInBtn" disabled title="Zoom in">+</button>
+      </div>
+    </div>
+
+    <div class="mobileBar" id="mobileBar">
+      <button class="primary" id="mDownloadCurrentBtn" disabled>Download</button>
+      <button id="mDownloadAllBtn" disabled>Download all</button>
+    </div>
+  </main>
+</div>
+
+
+
+
+<!-- How to Use Modal -->
+<div class="modalOverlay" id="howModal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="howTitle">
+    <div class="modalHeader">
+      <div class="modalTitle" id="howTitle">How to Use</div>
+      <button class="modalClose" id="howCloseBtn" aria-label="Close">✕</button>
+    </div>
+    <div class="modalBody">
+      <div class="howSimple">
+        <div class="howStepCard">
+          <div class="howStepTop">
+            <div class="howStepText">
+              1. Go to <span class="howLink"><a href="https://www.strava.com/athlete/delete_your_account" target="_blank" rel="noopener" style="color:coral;">Strava Account Download</a></span> and click <b>Request Your Archive</b>.
+            </div>
+          </div>
+          <div class="howShot">
+            <a href="https://postimg.cc/B854QkvR" target="_blank" rel="noopener">
+              <img src="https://i.postimg.cc/tgwTDHGR/request-archive.png" alt="Request Your Archive screenshot">
+            </a>
+          </div>
+        </div>
+
+        <div class="howStepCard">
+          <div class="howStepTop">
+            <div class="howStepText">
+              2. Wait for Strava to email your archive, then download it.
+            </div>
+          </div>
+          <div class="howShot">
+            <a href="https://postimg.cc/KKbhVf5z" target="_blank" rel="noopener">
+              <img src="https://i.postimg.cc/q7hBNZh8/download-archive.png" alt="Download archive screenshot">
+            </a>
+          </div>
+        </div>
+
+        <div class="howStepCard">
+          <div class="howStepTop">
+            <div class="howStepText">
+              3. Open the zip, extract <b>activities.csv</b>, and you’re ready to use this tool.
+            </div>
+          </div>
+          <div class="howShot">
+            <a href="https://postimg.cc/HcsDWLRL" target="_blank" rel="noopener">
+              <img src="https://i.postimg.cc/rm58J095/copy-activities-csv.png" alt="Extract activities.csv screenshot">
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const monthLabels = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+  const dowLabels = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+  // ---- Theme palettes (CSS variables) ----
+  const PALETTES = {
+    strava: { "--strava":"#FC4C02", "--stravaRgb":"252,76,2", "--bg0":"#071018", "--bg1":"#071822", "--bg2":"#1b070c" },
+    ocean:  { "--strava":"#2BB3FF", "--stravaRgb":"43,179,255", "--bg0":"#04121d", "--bg1":"#062338", "--bg2":"#081a2a" },
+    purple: { "--strava":"#B76CFF", "--stravaRgb":"183,108,255", "--bg0":"#0b0618", "--bg1":"#13082a", "--bg2":"#1a0a2b" },
+    neon:   { "--strava":"#B6FF2B", "--stravaRgb":"182,255,43", "--bg0":"#06120b", "--bg1":"#081f12", "--bg2":"#0f1a0a" },
+    sunrise:{ "--strava":"#FF6A3D", "--stravaRgb":"255,106,61", "--bg0":"#15040b", "--bg1":"#2a0813", "--bg2":"#2a1205" },
+    mono:   { "--strava":"#FFFFFF", "--stravaRgb":"255,255,255", "--bg0":"#05070c", "--bg1":"#0d1117", "--bg2":"#0b0b0b" },
+    teal:   { "--strava":"#19D3C5", "--stravaRgb":"25,211,197", "--bg0":"#041414", "--bg1":"#062224", "--bg2":"#061a17" },
+    pink:   { "--strava":"#FF4FD8", "--stravaRgb":"255,79,216", "--bg0":"#160312", "--bg1":"#2a0720", "--bg2":"#1d0612" },
+    gold:   { "--strava":"#FFC233", "--stravaRgb":"255,194,51", "--bg0":"#120e05", "--bg1":"#221705", "--bg2":"#1b0f04" },
+    slate:  { "--strava":"#8FB3FF", "--stravaRgb":"143,179,255", "--bg0":"#070b12", "--bg1":"#0b1220", "--bg2":"#0a0f18" }
+  };
+
+  function applyPalette(key){
+    const p = PALETTES[key] || PALETTES.strava;
+    for(const [k,v] of Object.entries(p)){
+      document.documentElement.style.setProperty(k, v);
+    }
+    // Derived alpha colors for consistent theming (including charts)
+    const rgb = p["--stravaRgb"] || "252,76,2";
+    const setA = (name, a) => document.documentElement.style.setProperty(name, `rgba(${rgb},${a})`);
+    setA("--stravaA08", ".08");
+    setA("--stravaA11", ".11");
+    setA("--stravaA12", ".12");
+    setA("--stravaA16", ".16");
+    setA("--stravaA20", ".20");
+    setA("--stravaA22", ".22");
+    setA("--stravaA30", ".30");
+    setA("--stravaA35", ".35");
+    setA("--stravaA62", ".62");
+    setA("--stravaA75", ".75");
+    setA("--stravaA95", ".95");
+    setA("--stravaA98", ".98");
+
+    // Keep status text readable in mono palette
+    if(key === "mono"){
+      document.documentElement.style.setProperty("--muted", "rgba(255,255,255,.80)");
+      document.documentElement.style.setProperty("--muted2", "rgba(255,255,255,.60)");
+    }
+  }
+
+  // ---- Context helpers (Philippines references) ----
+  const PH = {
+    MANILA_BAGUIO_ROAD_KM: 244.3,
+    UP_ACAD_OVAL_KM: 2.2,
+    MT_APO_M: 2954,
+    MT_PULAG_M: 2928
+  };
+
+  function prettyMult(x){
+    if(!Number.isFinite(x) || x <= 0) return "0×";
+    if(x < 1) return `${x.toFixed(1)}×`;
+    if(x < 10) return `${x.toFixed(1)}×`;
+    return `${x.toFixed(0)}×`;
+  }
+
+  function distanceContext(totalKm, unitMode){
+    if(!Number.isFinite(totalKm) || totalKm <= 0) return "";
+    const nMB = totalKm / PH.MANILA_BAGUIO_ROAD_KM;
+    const laps = totalKm / PH.UP_ACAD_OVAL_KM;
+    const mbTxt = `${prettyMult(nMB)} Manila→Baguio road trips`;
+    const lapsTxt = `${Math.round(laps).toLocaleString()} laps of UP Diliman Academic Oval`;
+    return `That’s roughly ${mbTxt}, or about ${lapsTxt}.`;
+  }
+
+  function elevationContext(totalElevM, unitMode){
+    if(!Number.isFinite(totalElevM) || totalElevM <= 0) return "";
+    const nApo = totalElevM / PH.MT_APO_M;
+    const nPulag = totalElevM / PH.MT_PULAG_M;
+    return `In climbing terms, that’s about ${prettyMult(nApo)} Mt. Apo summits (or roughly ${prettyMult(nPulag)} Mt. Pulag summits).`;
+  }
+
+  function setStatus(msg){ $("status").textContent = msg; }
+
+  $("paletteSelect").addEventListener("change", (e) => {
+    applyPalette(e.target.value);
+    if(slides.length) mountSlide(currentIndex);
+  });
+  applyPalette($("paletteSelect").value || "strava");
+
+  // ---- CSV parsing (handles quotes) ----
+  function parseCSV(text){
+    const rows = [];
+    let i=0, field="", row=[], inQuotes=false;
+    while(i < text.length){
+      const c = text[i];
+      const n = text[i+1];
+      if(c === '"'){
+        if(inQuotes && n === '"'){ field+='"'; i+=2; continue; }
+        inQuotes = !inQuotes; i++; continue;
+      }
+      if(!inQuotes && c === ','){ row.push(field); field=""; i++; continue; }
+      if(!inQuotes && (c === '\n' || c === '\r')){
+        if(c === '\r' && n === '\n') i++;
+        row.push(field); field="";
+        if(row.some(x => x !== "")) rows.push(row);
+        row=[]; i++; continue;
+      }
+      field += c; i++;
+    }
+    row.push(field);
+    if(row.some(x => x !== "")) rows.push(row);
+    return rows;
+  }
+
+  function toNumber(v){
+    if (v === null || v === undefined) return NaN;
+    const s = String(v).trim();
+    if(!s) return NaN;
+    const n = Number(s.replace(/,/g,""));
+    return Number.isFinite(n) ? n : NaN;
+  }
+  function safeDate(str){
+    const d = new Date(str);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  function normalizeType(t){
+    const s = String(t ?? "").trim();
+    return s || "Other";
+  }
+
+  function sportIcon(type){
+    const t = String(type || "").toLowerCase();
+    const wrap = (inner) => `
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="rgba(255,255,255,.92)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        ${inner}
+      </svg>`;
+    if(t.includes("run")) return wrap(`<path d="M13 5l-2 3 2 2 3-1 2 2"/><path d="M9 20l2-6-3-3"/><path d="M14 14l4 6"/><circle cx="13" cy="4" r="1"/>`);
+    if(t.includes("ride") || t.includes("bike") || t.includes("cycling")) return wrap(`<circle cx="7" cy="17" r="3"/><circle cx="17" cy="17" r="3"/><path d="M7 17l5-10h3l2 4"/><path d="M10 7h2"/><path d="M12 7l-2 4"/>`);
+    if(t.includes("swim")) return wrap(`<path d="M3 17c2 2 4 2 6 0s4-2 6 0 4 2 6 0"/><path d="M7 12l4-2 2 2"/><path d="M14 6c-2 0-3 1-3 3"/>`);
+    if(t.includes("walk") || t.includes("hike") || t.includes("trail")) return wrap(`<path d="M8 21l2-9 3-3 3 2"/><path d="M13 9l-1-4 2-2"/><path d="M6 21h6"/><path d="M17 21l-2-7"/>`);
+    if(t.includes("workout") || t.includes("weight") || t.includes("gym") || t.includes("strength")) return wrap(`<path d="M4 10v4"/><path d="M20 10v4"/><path d="M6 9v6"/><path d="M18 9v6"/><path d="M8 12h8"/>`);
+    if(t.includes("yoga")) return wrap(`<path d="M12 6a2 2 0 1 0 0.01 0"/><path d="M7 20c2-3 8-3 10 0"/><path d="M9 12l3 3 3-3"/>`);
+    if(t.includes("row")) return wrap(`<path d="M4 14l6 2 10-4"/><path d="M6 10l4 8"/><path d="M14 8l-2 10"/><path d="M20 6l-3 2"/>`);
+    if(t.includes("ski")) return wrap(`<path d="M7 3l2 7"/><path d="M12 3v8"/><path d="M5 21c4 0 8-4 14-4"/><path d="M6 18c4 0 7-3 13-3"/>`);
+    if(t.includes("surf")) return wrap(`<path d="M8 19c2-2 6-2 8 0"/><path d="M4 15c3-3 13-3 16 0"/><path d="M12 5l3 3-3 3-3-3z"/>`);
+    if(t.includes("climb")) return wrap(`<path d="M6 20l3-6 3 2 3-8"/><path d="M4 12l4-2"/><path d="M14 6l3 2"/><path d="M18 20h-6"/>`);
+    return wrap(`<path d="M13 2L3 14h7l-1 8 12-14h-7l-1-6z"/>`);
+  }
+
+  function escapeHtml(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  // ---- Units / formatting ----
+  function distanceUnit(unitMode){ return unitMode === "imperial" ? "mi" : "km"; }
+  function elevationUnit(unitMode){ return unitMode === "imperial" ? "ft" : "m"; }
+
+  function formatDistance(km, unitMode){
+    if(!Number.isFinite(km)) return "0";
+    if(unitMode === "imperial"){
+      const mi = km * 0.621371;
+      return mi >= 100 ? mi.toFixed(0) : mi.toFixed(1);
+    }
+    return km >= 100 ? km.toFixed(0) : km.toFixed(1);
+  }
+  function formatElevation(m, unitMode){
+    if(!Number.isFinite(m)) return "0";
+    if(unitMode === "imperial"){
+      const ft = m * 3.28084;
+      return ft >= 10000 ? ft.toFixed(0) : ft.toFixed(0);
+    }
+    return m >= 10000 ? m.toFixed(0) : m.toFixed(0);
+  }
+  function formatHours(seconds){
+    if(!Number.isFinite(seconds)) return "0";
+    const h = seconds / 3600;
+    return h >= 100 ? h.toFixed(0) : h.toFixed(1);
+  }
+  function formatHMS(seconds){
+    if(!Number.isFinite(seconds) || seconds < 0) return "0:00";
+    const s = Math.round(seconds);
+    const hh = Math.floor(s/3600);
+    const mm = Math.floor((s%3600)/60);
+    const ss = s%60;
+    if(hh > 0) return `${hh}:${String(mm).padStart(2,"0")}:${String(ss).padStart(2,"0")}`;
+    return `${mm}:${String(ss).padStart(2,"0")}`;
+  }
+  function paceFromSpeedMps(speedMps){
+    if(!Number.isFinite(speedMps) || speedMps <= 0) return null;
+    const secPerKm = 1000 / speedMps;
+    const mm = Math.floor(secPerKm/60);
+    const ss = Math.round(secPerKm%60);
+    return `${mm}:${String(ss).padStart(2,"0")}`;
+  }
+
+  // ---- State ----
+  let activities = [];
+  let years = [];
+  let coverPhotoDataUrl = "";
+  let slides = [];
+  let slideTitles = [];
+  let currentIndex = 0;
+
+  // ---- Preview zoom state ----
+  let userZoom = 1;        // user-controlled multiplier
+  let baseScale = 1;       // fit-to-screen scale (computed)
+  const ZOOM_MIN = 0.5;
+  const ZOOM_MAX = 2.5;
+
+  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+
+  function setZoom(next){
+    userZoom = clamp(next, ZOOM_MIN, ZOOM_MAX);
+    const story = $("storyMount").querySelector(".story");
+    if(story) applyScale(story);
+    updateZoomUI();
+  }
+
+  function updateZoomUI(){}
+
+  // ---- Load CSV ----
+  $("csvFile").addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if(!file) return;
+
+    setStatus("Reading CSV…");
+    const text = await file.text();
+    const rows = parseCSV(text);
+
+    if(rows.length < 2){
+      setStatus("CSV seems empty. Please choose a valid Strava activities CSV.");
+      return;
+    }
+
+    const header = rows[0].map(h => h.trim());
+    const idx = (name) => header.findIndex(h => h.toLowerCase() === name.toLowerCase());
+
+    // Core
+    const dateI = idx("Activity Date");
+    const typeI = idx("Activity Type");
+    const distI = idx("Distance");
+    const elapsedI = idx("Elapsed Time");
+    const movingI = idx("Moving Time");
+    const elevI = idx("Elevation Gain");
+    const nameI = idx("Activity Name");
+    const flaggedI = idx("Flagged");
+
+    // Optional performance columns
+    const avgSpeedI = idx("Average Speed");
+    const maxSpeedI = idx("Max Speed");
+    const avgHrI = idx("Average Heart Rate");
+    const maxHrI = idx("Max Heart Rate");
+    const avgCadI = idx("Average Cadence");
+    const avgWattsI = idx("Average Watts");
+
+    if(dateI < 0 || typeI < 0 || distI < 0 || elapsedI < 0){
+      setStatus("Missing expected columns. Need at least:\n• Activity Date\n• Activity Type\n• Distance\n• Elapsed Time");
+      return;
+    }
+
+    const out = [];
+    for(let r=1; r<rows.length; r++){
+      const row = rows[r];
+
+      const d = safeDate(row[dateI]);
+      if(!d) continue;
+
+      if(flaggedI >= 0){
+        const f = String(row[flaggedI] ?? "").trim().toLowerCase();
+        if(f === "true" || f === "1" || f === "yes") continue;
+      }
+
+      const dist = toNumber(row[distI]);      // assumed km
+      const elapsed = toNumber(row[elapsedI]); // seconds
+      const moving = movingI >= 0 ? toNumber(row[movingI]) : NaN;
+      const elev = elevI >= 0 ? toNumber(row[elevI]) : NaN;
+
+      if(!Number.isFinite(elapsed) || elapsed <= 0) continue;
+
+      const type = normalizeType(row[typeI]);
+      const title = String(nameI >= 0 ? (row[nameI] ?? "") : "").trim();
+
+      const avgSpeed = avgSpeedI >= 0 ? toNumber(row[avgSpeedI]) : NaN;
+      const maxSpeed = maxSpeedI >= 0 ? toNumber(row[maxSpeedI]) : NaN;
+      const avgHr = avgHrI >= 0 ? toNumber(row[avgHrI]) : NaN;
+      const maxHr = maxHrI >= 0 ? toNumber(row[maxHrI]) : NaN;
+      const avgCad = avgCadI >= 0 ? toNumber(row[avgCadI]) : NaN;
+      const avgWatts = avgWattsI >= 0 ? toNumber(row[avgWattsI]) : NaN;
+
+      out.push({
+        date: d,
+        year: d.getFullYear(),
+        month: d.getMonth(),
+        dow: d.getDay(),
+        type,
+        distanceKm: Number.isFinite(dist) ? dist : 0,
+        elapsedSec: elapsed,
+        movingSec: Number.isFinite(moving) ? moving : NaN,
+        elevM: Number.isFinite(elev) ? elev : 0,
+        title,
+        avgSpeedMps: Number.isFinite(avgSpeed) ? avgSpeed : NaN,
+        maxSpeedMps: Number.isFinite(maxSpeed) ? maxSpeed : NaN,
+        avgHr: Number.isFinite(avgHr) ? avgHr : NaN,
+        maxHr: Number.isFinite(maxHr) ? maxHr : NaN,
+        avgCad: Number.isFinite(avgCad) ? avgCad : NaN,
+        avgWatts: Number.isFinite(avgWatts) ? avgWatts : NaN
+      });
+    }
+
+    activities = out;
+    years = Array.from(new Set(out.map(a => a.year))).sort((a,b)=>b-a);
+
+    const ys = $("yearSelect");
+    ys.innerHTML = "";
+    years.forEach(y => {
+      const opt = document.createElement("option");
+      opt.value = String(y);
+      opt.textContent = String(y);
+      ys.appendChild(opt);
+    });
+    ys.disabled = years.length === 0;
+    $("generateBtn").disabled = years.length === 0;
+
+    setStatus(`Loaded ${activities.length.toLocaleString()} activities across ${years.length} year(s).\nPick a year and click Generate.`);
+  });
+
+  // ---- Cover photo ----
+  $("photoFile").addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if(!file){ coverPhotoDataUrl = ""; return; }
+    const reader = new FileReader();
+    reader.onload = () => { coverPhotoDataUrl = reader.result; if(slides.length) mountSlide(currentIndex); };
+    reader.readAsDataURL(file);
+  });
+
+  // ---- Summaries ----
+  function dayKey(d){
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  }
+
+  function summarizeYear(year){
+    const yearActs = activities.filter(a => a.year === year);
+
+    const activeDaysSet = new Set(yearActs.map(a => dayKey(a.date)));
+    const activeDays = activeDaysSet.size;
+
+    const totalDistanceKm = yearActs.reduce((s,a)=>s+a.distanceKm,0);
+    const totalTimeSec = yearActs.reduce((s,a)=>s+a.elapsedSec,0);
+    const totalMovingSec = yearActs.reduce((s,a)=> s + (Number.isFinite(a.movingSec)?a.movingSec:0), 0);
+    const totalElevM = yearActs.reduce((s,a)=>s+a.elevM,0);
+    const activityCount = yearActs.length;
+
+    const monthTime = Array(12).fill(0);
+    const monthDist = Array(12).fill(0);
+    const monthElev = Array(12).fill(0);
+    for(const a of yearActs){
+      monthTime[a.month] += a.elapsedSec;
+      monthDist[a.month] += a.distanceKm;
+      monthElev[a.month] += a.elevM;
+    }
+
+    const byType = new Map();
+    for(const a of yearActs){
+      const cur = byType.get(a.type) || { type:a.type, distanceKm:0, timeSec:0, elevM:0, count:0 };
+      cur.distanceKm += a.distanceKm;
+      cur.timeSec += a.elapsedSec;
+      cur.elevM += a.elevM;
+      cur.count += 1;
+      byType.set(a.type, cur);
+    }
+    const types = Array.from(byType.values()).sort((x,y)=>{
+      if (y.distanceKm !== x.distanceKm) return y.distanceKm - x.distanceKm;
+      return y.timeSec - x.timeSec;
+    });
+
+    const longestDist = yearActs.reduce((best,a)=> (a.distanceKm > (best?.distanceKm ?? -1) ? a : best), null);
+    const biggestClimb = yearActs.reduce((best,a)=> (a.elevM > (best?.elevM ?? -1) ? a : best), null);
+    const longestTime = yearActs.reduce((best,a)=> (a.elapsedSec > (best?.elapsedSec ?? -1) ? a : best), null);
+
+    const bestMonthIdx = monthDist.indexOf(Math.max(...monthDist));
+    const bestMonthLabel = monthLabels[bestMonthIdx];
+
+    const dowCount = Array(7).fill(0);
+    for(const a of yearActs) dowCount[a.dow] += 1;
+    const bestDowIdx = dowCount.indexOf(Math.max(...dowCount));
+
+    const daysSorted = Array.from(activeDaysSet).sort();
+    let bestStreak = 0, curStreak = 0;
+    for(let i=0;i<daysSorted.length;i++){
+      const d0 = new Date(daysSorted[i] + "T00:00:00");
+      if(i===0){ curStreak = 1; bestStreak = 1; continue; }
+      const dPrev = new Date(daysSorted[i-1] + "T00:00:00");
+      const diffDays = Math.round((d0 - dPrev) / (1000*60*60*24));
+      if(diffDays === 1) curStreak++;
+      else curStreak = 1;
+      if(curStreak > bestStreak) bestStreak = curStreak;
+    }
+
+    function weekKey(d){
+      const x = new Date(d);
+      const day = (x.getDay() + 6) % 7; // Mon=0..Sun=6
+      x.setDate(x.getDate() - day);
+      return dayKey(x);
+    }
+    const weekDist = new Map();
+    const weekTime = new Map();
+    for(const a of yearActs){
+      const k = weekKey(a.date);
+      weekDist.set(k, (weekDist.get(k)||0) + a.distanceKm);
+      weekTime.set(k, (weekTime.get(k)||0) + a.elapsedSec);
+    }
+    let bestWeek = null;
+    for(const [k,v] of weekDist.entries()){
+      if(!bestWeek || v > bestWeek.distKm) bestWeek = { key:k, distKm:v, timeSec:(weekTime.get(k)||0) };
+    }
+
+    // Run pace insights (only if Run-like activities exist and average speed exists)
+    const runActs = yearActs.filter(a => /run/i.test(a.type) && a.distanceKm > 0.5);
+    const hasAvgSpeed = runActs.some(a => Number.isFinite(a.avgSpeedMps) && a.avgSpeedMps > 0);
+    let runPace = null;
+    if(runActs.length && hasAvgSpeed){
+      const paces = runActs
+        .map(a => ({ a, paceSecPerKm: (a.avgSpeedMps>0 ? 1000/a.avgSpeedMps : NaN) }))
+        .filter(x => Number.isFinite(x.paceSecPerKm) && x.paceSecPerKm > 0 && x.paceSecPerKm < 1200);
+
+      if(paces.length){
+        paces.sort((x,y)=>x.paceSecPerKm - y.paceSecPerKm);
+
+        const best = paces[0];
+        const median = paces[Math.floor(paces.length/2)];
+        const p10 = paces[Math.floor(paces.length*0.10)];
+        const p90 = paces[Math.floor(paces.length*0.90)];
+        const slowest = paces[paces.length-1];
+
+        const bestPaceStr = paceFromSpeedMps(best.a.avgSpeedMps);
+        const medianPaceStr = paceFromSpeedMps(median.a.avgSpeedMps);
+        const p10Str = paceFromSpeedMps(1000/p10.paceSecPerKm);
+        const p90Str = paceFromSpeedMps(1000/p90.paceSecPerKm);
+
+        const proj = (paceSecPerKm, km) => formatHMS(paceSecPerKm * km);
+
+        runPace = {
+          count: runActs.length,
+          samples: paces.length,
+
+          bestPace: bestPaceStr,
+          bestTitle: best.a.title || "Fastest run",
+          bestDistKm: best.a.distanceKm || 0,
+
+          medianPace: medianPaceStr,
+          medianDistKm: median.a.distanceKm || 0,
+
+          p10Pace: p10Str,
+          p90Pace: p90Str,
+
+          fastestAvg: paceFromSpeedMps(1000/best.paceSecPerKm),
+          slowestAvg: paceFromSpeedMps(1000/slowest.paceSecPerKm),
+
+          est5k: proj(median.paceSecPerKm, 5),
+          est10k: proj(median.paceSecPerKm, 10),
+          estHalf: proj(median.paceSecPerKm, 21.097),
+
+          spreadSec: Math.round(p90.paceSecPerKm - p10.paceSecPerKm)
+        };
+      }
+    }
+
+    // HR insights (more perspectives)
+    const hasHr = yearActs.some(a => Number.isFinite(a.avgHr) && a.avgHr > 0);
+    let hr = null;
+    if(hasHr){
+      const avgHrs = yearActs.map(a => a.avgHr).filter(v => Number.isFinite(v) && v > 0 && v < 240);
+      const maxHrs = yearActs.map(a => a.maxHr).filter(v => Number.isFinite(v) && v > 0 && v < 240);
+      if(avgHrs.length){
+        avgHrs.sort((a,b)=>a-b);
+        const median = avgHrs[Math.floor(avgHrs.length/2)];
+        const average = avgHrs.reduce((s,v)=>s+v,0)/avgHrs.length;
+
+        const p10 = avgHrs[Math.floor(avgHrs.length*0.10)];
+        const p90 = avgHrs[Math.floor(avgHrs.length*0.90)];
+        const minAvg = avgHrs[0];
+        const maxAvg = avgHrs[avgHrs.length-1];
+
+        let avgToMaxGap = null;
+        const gaps = yearActs
+          .map(a => (Number.isFinite(a.avgHr) && Number.isFinite(a.maxHr) ? (a.maxHr - a.avgHr) : NaN))
+          .filter(v => Number.isFinite(v) && v >= 0 && v < 120);
+        if(gaps.length){
+          gaps.sort((a,b)=>a-b);
+          avgToMaxGap = Math.round(gaps[Math.floor(gaps.length/2)]);
+        }
+
+        const peakMaxHr = maxHrs.length ? Math.round(Math.max(...maxHrs)) : null;
+
+        hr = {
+          median: Math.round(median),
+          average: Math.round(average),
+          p10: Math.round(p10),
+          p90: Math.round(p90),
+          minAvg: Math.round(minAvg),
+          maxAvg: Math.round(maxAvg),
+          peakMaxHr,
+          avgToMaxGap,
+          samples: avgHrs.length,
+          maxSamples: maxHrs.length
+        };
+      }
+    }
+
+    return {
+      year,
+      yearActs,
+      activeDays,
+      totalDistanceKm,
+      totalTimeSec,
+      totalMovingSec,
+      totalElevM,
+      activityCount,
+      topTypes: types.slice(0,5),
+      monthTime,
+      monthDist,
+      monthElev,
+      bestMonthLabel,
+      longestDist,
+      biggestClimb,
+      longestTime,
+      bestDowIdx,
+      bestStreak,
+      bestWeek,
+      runPace,
+      hr
+    };
+  }
+
+  // ---- Slide templates ----
+  function shell({year, title, subtitle, theme="default", bodyHtml="", footerLeft="#StravaYearInReview", footerRight=""}){
+    return `
+      <div class="story">
+        <div class="bg ${theme==="red" ? "red":""}"></div>
+        <div class="stripe"></div>
+
+        <div class="topbar">
+          <div class="badge">
+            <div class="pill"></div>
+            <div class="txt">
+              <b>Strava</b>
+              <span>Year in Sport</span>
+            </div>
+          </div>
+          <div class="yearMark">${year}</div>
+        </div>
+
+        <div class="content">
+          <div>
+            <h2 class="heroTitle"><span>${escapeHtml(title)}</span><em>${escapeHtml(subtitle)}</em></h2>
+          </div>
+          ${bodyHtml}
+        </div>
+
+        <div class="footer">
+          <div class="tag"><i></i> ${escapeHtml(footerLeft)}</div>
+          <div>${escapeHtml(footerRight)}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function slideCover(sum, unitMode){
+    const name = $("nameInput").value?.trim() || "Your Year in Sport";
+    const photo = coverPhotoDataUrl;
+    const dist = `${formatDistance(sum.totalDistanceKm, unitMode)} ${distanceUnit(unitMode)}`;
+    const hrs = `${formatHours(sum.totalTimeSec)} hours`;
+    const elev = `${formatElevation(sum.totalElevM, unitMode)} ${elevationUnit(unitMode)}`;
+
+    const body = `
+      <div>
+        <p class="heroSub">A premium recap of your training, consistency, and biggest moments.</p>
+      </div>
+
+      <div class="photo">
+        ${photo ? `<div class="photoBg" style="background-image:url(${photo});"></div>` : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.55);font-weight:800;font-size:18px;letter-spacing:.2px;"></div>`}
+        <div class="overlay"></div>
+        <div class="name">
+          ${escapeHtml(name)}
+          <div class="smallCaps">${sum.activityCount.toLocaleString()} activities • ${sum.activeDays.toLocaleString()} active days</div>
+        </div>
+      </div>
+
+      <div class="stack3">
+        <div class="card stat">
+          <div class="k">Total Distance</div>
+          <div class="v" style="font-size:58px">${dist}</div>
+        </div>
+        <div class="card stat">
+          <div class="k">Total Time</div>
+          <div class="v" style="font-size:58px">${hrs}</div>
+        </div>
+        <div class="card stat">
+          <div class="k">Elevation Gain</div>
+          <div class="v" style="font-size:58px">${elev}</div>
+        </div>
+      </div>
+    `;
+
+    return shell({
+      year: sum.year,
+      title: "YEAR IN",
+      subtitle: "SPORT",
+      bodyHtml: body,
+      footerLeft: "#StravaYearInReview",
+      footerRight: ""
+    });
+  }
+
+  function slideTopSports(sum, unitMode){
+    const items = sum.topTypes.length ? sum.topTypes : [{type:"No data", distanceKm:0, timeSec:0, count:0}];
+    const show = items.slice(0,5);
+
+    const rows = show.map((t,i)=>{
+      const metric = (t.distanceKm > 0.1)
+        ? `${formatDistance(t.distanceKm, unitMode)} ${distanceUnit(unitMode)}`
+        : `${formatHours(t.timeSec)} h`;
+
+      const share = (sum.totalDistanceKm>0 ? Math.round((t.distanceKm/sum.totalDistanceKm)*100) : 0);
+
+      return `
+        <div class="li" style="padding:26px 24px; border-radius:26px">
+          <div class="left">
+            <div class="rank">#${i+1}</div>
+            <div class="ico" aria-hidden="true">${sportIcon(t.type)}</div>
+            <div class="sport">
+              <b>${escapeHtml(t.type)}</b>
+              <span>${(t.count||0).toLocaleString()} activities • about ${share}% of your total distance</span>
+            </div>
+          </div>
+          <div class="metric" style="font-size:40px;min-width:220px">${metric}</div>
+        </div>
+      `;
+    }).join("");
+
+    const body = `
+      <p class="heroSub">These were the sports that defined your year — ranked by total distance (and by time when distance is tiny).</p>
+      <div class="card" style="padding:18px">
+        <div class="list" style="gap:16px">${rows}</div>
+      </div>
+      <div class="card" style="margin-top:10px">
+        <div style="font-size:24px;color:rgba(255,255,255,.86);line-height:1.35">
+          Bigger numbers on the right mean that sport dominated your training volume — simple and brutally honest.
+        </div>
+      </div>
+    `;
+
+    return shell({ year: sum.year, title:"TOP", subtitle:"SPORTS", bodyHtml: body, footerRight:"Totals by activity type" });
+  }
+
+  function slideHighlights(sum, unitMode){
+    const longest = sum.longestDist;
+    const climb = sum.biggestClimb;
+    const time = sum.longestTime;
+
+    const longestLine = longest ? `${formatDistance(longest.distanceKm, unitMode)} ${distanceUnit(unitMode)} • ${escapeHtml(longest.type)}` : "—";
+    const climbLine = climb ? `${formatElevation(climb.elevM, unitMode)} ${elevationUnit(unitMode)} • ${escapeHtml(climb.type)}` : "—";
+    const timeLine = time ? `${formatHMS(time.elapsedSec)} • ${escapeHtml(time.type)}` : "—";
+
+    const body = `
+      <p class="heroSub">These were your headline efforts — the sessions that stood out on distance, climbing, and time.</p>
+      <div class="stack3">
+        <div class="card stat">
+          <div class="k">Longest Distance</div>
+          <div class="v" style="font-size:46px">${longestLine}</div>
+          <div class="s">${longest?.title ? escapeHtml(longest.title).slice(0,70) : ""}<br><span style="color:rgba(255,255,255,.72)">${distanceContext(longest?.distanceKm||0, unitMode)}</span></div>
+        </div>
+        <div class="card stat">
+          <div class="k">Biggest Climb</div>
+          <div class="v" style="font-size:46px">${climbLine}</div>
+          <div class="s">${climb?.title ? escapeHtml(climb.title).slice(0,70) : ""}<br><span style="color:rgba(255,255,255,.72)">${elevationContext(climb?.elevM||0, unitMode)}</span></div>
+        </div>
+        <div class="card stat">
+          <div class="k">Longest Time</div>
+          <div class="v" style="font-size:46px">${timeLine}</div>
+          <div class="s">${time?.title ? escapeHtml(time.title).slice(0,70) : ""}<br><span style="color:rgba(255,255,255,.72)">That’s about ${(time?.elapsedSec ? (time.elapsedSec/3600/8).toFixed(1) : "0")} full 8-hour workdays.</span></div>
+        </div>
+      </div>
+    `;
+    return shell({ year: sum.year, title:"BIG", subtitle:"DAYS", bodyHtml: body, footerRight:"Single-activity peaks" });
+  }
+
+  function makeMonthBars(values, labels, fmtValueFn){
+    const max = Math.max(...values);
+    return values.map((v, idx) => {
+      const pct = max > 0 ? (v / max) : 0;
+      const height = Math.max(0.02, pct) * 100;
+      return `
+        <div class="bar"
+             style="height:${height}%"
+             data-label="${labels[idx]}"
+             data-val="${fmtValueFn(v)}"></div>
+      `;
+    }).join("");
+  }
+
+  function slideMonthlyDistance(sum, unitMode){
+    const bars = makeMonthBars(sum.monthDist, monthLabels, (km)=>{
+      return `${formatDistance(km, unitMode)}${distanceUnit(unitMode)}`;
+    });
+    const body = `
+      <p class="heroSub">Distance volume by month (scaled to your peak month).<br><span style="color:rgba(255,255,255,.72)">Year total context: ${distanceContext(sum.totalDistanceKm, unitMode)}</span></p>
+      <div class="card chartWrap">
+        <div class="chartTitle">
+          <b>Monthly Distance</b>
+          <span>Big chart, easy scan</span>
+        </div>
+        <div class="bars">${bars}</div>
+      </div>
+    `;
+    return shell({ year: sum.year, title:"MONTHLY", subtitle:"DISTANCE", bodyHtml: body, footerRight:"12-month volume" });
+  }
+
+  function slideMonthlyTime(sum){
+    const bars = makeMonthBars(sum.monthTime, monthLabels, (sec)=>{
+      const h = sec/3600;
+      return h >= 1 ? `${h.toFixed(0)}h` : `${Math.round(h*60)}m`;
+    });
+    const body = `
+      <p class="heroSub">${(sum.totalTimeSec/3600).toFixed(0)} total hours — here’s the breakdown.<br><span style="color:rgba(255,255,255,.72)">Avg ≈ ${(sum.totalTimeSec/3600/52).toFixed(1)} h/week</span></p>
+      <div class="card chartWrap">
+        <div class="chartTitle">
+          <b>Monthly Time</b>
+          <span>Highest month sets the scale</span>
+        </div>
+        <div class="bars">${bars}</div>
+      </div>
+    `;
+    return shell({ year: sum.year, title:"TOTAL", subtitle:"TIME", theme:"red", bodyHtml: body, footerRight:"Hours (rounded)" });
+  }
+
+  function slideMonthlyElevation(sum, unitMode){
+    const bars = makeMonthBars(sum.monthElev, monthLabels, (m)=>{
+      return `${formatElevation(m, unitMode)}${elevationUnit(unitMode)}`;
+    });
+    const body = `
+      <p class="heroSub">Climbing by month — a great signal of effort.<br><span style="color:rgba(255,255,255,.72)">Year total context: ${elevationContext(sum.totalElevM, unitMode)}</span></p>
+      <div class="card chartWrap">
+        <div class="chartTitle">
+          <b>Monthly Elevation</b>
+          <span>Total gain each month</span>
+        </div>
+        <div class="bars">${bars}</div>
+      </div>
+    `;
+    return shell({ year: sum.year, title:"MONTHLY", subtitle:"CLIMBING", bodyHtml: body, footerRight:"Elevation gain" });
+  }
+
+  function sparklineSVG(values){
+    const max = Math.max(...values);
+    const min = Math.min(...values);
+    const w = 1000, h = 200, pad = 14;
+    const span = (max - min) || 1;
+
+    const pts = values.map((v,i)=>{
+      const x = pad + (i * (w - pad*2) / (values.length-1));
+      const y = pad + (h - pad*2) * (1 - ((v - min) / span));
+      return [x,y];
+    });
+
+    const d = pts.map((p,i)=> (i===0 ? `M ${p[0]} ${p[1]}` : `L ${p[0]} ${p[1]}`)).join(" ");
+    const dots = pts.map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="7" fill="var(--strava)" fill-opacity="0.95" />`).join("");
+
+    return `
+      <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+        <path d="${d}" fill="none" stroke="var(--strava)" stroke-opacity="0.75" stroke-width="10" stroke-linecap="round" />
+        <path d="${d}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="4" stroke-linecap="round" />
+        ${dots}
+      </svg>
+    `;
+  }
+
+  function slidePeakWeek(sum, unitMode){
+    const wk = sum.bestWeek;
+    const wkLine = wk ? `${formatDistance(wk.distKm, unitMode)} ${distanceUnit(unitMode)}` : "—";
+    const wkTime = wk ? `${formatHours(wk.timeSec)} h` : "—";
+    const body = `
+      <p class="heroSub">This was your strongest training block — the week where your distance peaked.</p>
+      <div class="grid2">
+        <div class="card stat">
+          <div class="k">Peak Week Distance</div>
+          <div class="v">${wkLine}</div>
+          <div class="s">Week starting ${wk ? escapeHtml(wk.key) : "—"}<br><span style="color:rgba(255,255,255,.72)">That’s around ${wk ? Math.round(wk.distKm/PH.UP_ACAD_OVAL_KM).toLocaleString() : "0"} laps of UP Oval.</span></div>
+        </div>
+        <div class="card stat">
+          <div class="k">Peak Week Time</div>
+          <div class="v">${wkTime}</div>
+          <div class="s">This is the time volume from the same peak week.</div>
+        </div>
+      </div>
+      <div class="spark" style="margin-top:8px">
+        <div class="label">Monthly distance sparkline</div>
+        ${sparklineSVG(sum.monthDist)}
+      </div>
+    `;
+    return shell({ year: sum.year, title:"PEAK", subtitle:"WEEK", bodyHtml: body, footerRight:"Training block spotlight" });
+  }
+
+  function slideConsistency(sum){
+    const avgPerWeek = sum.activityCount / 52;
+    const bestDow = dowLabels[sum.bestDowIdx];
+    const body = `
+      <p class="heroSub">Consistency beats motivation — and your calendar shows you kept showing up.</p>
+      <div class="grid3">
+        <div class="card stat">
+          <div class="k">Active Days</div>
+          <div class="v">${sum.activeDays.toLocaleString()}</div>
+          <div class="s">These are days where you got at least one session done.<br><span style="color:rgba(255,255,255,.72)">That leaves ${Math.max(0, 365 - sum.activeDays).toLocaleString()} rest days.</span></div>
+        </div>
+        <div class="card stat">
+          <div class="k">Best Streak</div>
+          <div class="v">${sum.bestStreak}</div>
+          <div class="s">Your longest uninterrupted run of active days.</div>
+        </div>
+        <div class="card stat">
+          <div class="k">Avg / Week</div>
+          <div class="v">${avgPerWeek.toFixed(1)}</div>
+          <div class="s">This is how often you trained, on average, every week.</div>
+        </div>
+      </div>
+
+      <div class="card stat" style="margin-top:8px">
+        <div class="k">Most Common Day</div>
+        <div class="v" style="font-size:84px">${bestDow}</div>
+        <div class="s">If you want to build a plan, this is your natural training day.</div>
+      </div>
+    `;
+    return shell({ year: sum.year, title:"CONSISTENCY", subtitle:"WINS", bodyHtml: body, footerRight:"Streaks & rhythm" });
+  }
+
+  function slideRunPace(sum){
+    const rp = sum.runPace;
+    if(!rp) return null;
+
+    const spreadMin = Math.floor(rp.spreadSec/60);
+    const spreadSec = String(Math.abs(rp.spreadSec%60)).padStart(2,"0");
+    const spreadTxt = `${spreadMin}:${spreadSec} /km`;
+
+    const narrative1 = `Your typical running pace sat around ${rp.medianPace} /km — a solid “everyday” rhythm you returned to again and again.`;
+    const narrative2 = `Your fastest average pace hit ${rp.bestPace} /km, showing there were days you really opened it up.`;
+    const narrative3 = `Most runs fell between ${rp.p10Pace}–${rp.p90Pace} /km (middle 80%), which is a great snapshot of your intensity range.`;
+
+    const body = `
+      <p class="heroSub">Pace is the cleanest running story — it reveals both fitness and how you chose to train.</p>
+
+      <div class="grid2">
+        <div class="card stat">
+          <div class="k">Best Average Pace</div>
+          <div class="v">${rp.bestPace} <span style="font-size:30px;color:rgba(255,255,255,.70);font-weight:900">/km</span></div>
+          <div class="s">That came from <b style="color:rgba(255,255,255,.92)">${escapeHtml(rp.bestTitle).slice(0,60)}</b> (${(rp.bestDistKm||0).toFixed(1)} km).</div>
+        </div>
+        <div class="card stat">
+          <div class="k">Median Pace (your “typical” run)</div>
+          <div class="v">${rp.medianPace} <span style="font-size:30px;color:rgba(255,255,255,.70);font-weight:900">/km</span></div>
+          <div class="s">Based on ${rp.samples.toLocaleString()} pace samples across ${rp.count.toLocaleString()} run activities.</div>
+        </div>
+      </div>
+
+      <div class="grid3" style="margin-top:8px">
+        <div class="card stat">
+          <div class="k">Typical range (P10 → P90)</div>
+          <div class="v" style="font-size:48px">${rp.p10Pace}–${rp.p90Pace} <span style="font-size:22px;color:rgba(255,255,255,.70);font-weight:900">/km</span></div>
+          <div class="s">Where most of your runs lived.</div>
+        </div>
+        <div class="card stat">
+          <div class="k">Pace spread (middle 80%)</div>
+          <div class="v" style="font-size:48px">${spreadTxt}</div>
+          <div class="s">A quick way to see how varied your intensity was.</div>
+        </div>
+        <div class="card stat">
+          <div class="k">Median pace projections</div>
+          <div class="v" style="font-size:40px">${rp.est5k}</div>
+          <div class="s">At your median pace: 10K ≈ <b style="color:rgba(255,255,255,.92)">${rp.est10k}</b> • Half ≈ <b style="color:rgba(255,255,255,.92)">${rp.estHalf}</b></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:8px">
+        <div style="font-size:15px;color:rgba(255,255,255,.70);letter-spacing:.65px;text-transform:uppercase;font-weight:900;margin-bottom:10px">What this suggests</div>
+        <div style="color:rgba(255,255,255,.86);font-size:24px;line-height:1.35">
+          <div style="margin-bottom:8px">• ${escapeHtml(narrative1)}</div>
+          <div style="margin-bottom:8px">• ${escapeHtml(narrative2)}</div>
+          <div>• ${escapeHtml(narrative3)}</div>
+        </div>
+      </div>
+    `;
+    return shell({ year: sum.year, title:"RUNNING", subtitle:"PACE", bodyHtml: body, footerRight:"Shown if pace data exists" });
+  }
+
+  function slideHeartRate(sum){
+    const hr = sum.hr;
+    if(!hr) return null;
+
+    const intensityLine = `Most sessions landed around ${hr.median} bpm, which often points to steady aerobic work rather than all-out efforts.`;
+    const spreadLine = `Your middle 80% typically sat between ${hr.p10}–${hr.p90} bpm, showing how wide your intensity range really was.`;
+    const gapLine = (hr.avgToMaxGap !== null)
+      ? `When max HR was recorded, the median avg→max gap was about ${hr.avgToMaxGap} bpm — a nice proxy for how “spiky” your sessions got.`
+      : `Max HR wasn’t recorded often enough to estimate session “spikiness” reliably.`;
+    const peakLine = (hr.peakMaxHr !== null)
+      ? `Your highest recorded max HR hit ${hr.peakMaxHr} bpm, likely during a hard effort or a steep climb.`
+      : `No max HR column found — so we focused on average HR patterns.`;
+
+    const body = `
+      <p class="heroSub">Heart rate tells the story of intensity — and how your effort changed across the year.</p>
+
+      <div class="grid2">
+        <div class="card stat">
+          <div class="k">Average HR (across activities)</div>
+          <div class="v">${hr.average} <span style="font-size:30px;color:rgba(255,255,255,.70);font-weight:900">bpm</span></div>
+          <div class="s">Based on ${hr.samples.toLocaleString()} activities with HR data.</div>
+        </div>
+        <div class="card stat">
+          <div class="k">Median HR (more robust)</div>
+          <div class="v">${hr.median} <span style="font-size:30px;color:rgba(255,255,255,.70);font-weight:900">bpm</span></div>
+          <div class="s">If you had a few very hard days, median keeps the story honest.</div>
+        </div>
+      </div>
+
+      <div class="grid3" style="margin-top:8px">
+        <div class="card stat">
+          <div class="k">Typical range (P10 → P90)</div>
+          <div class="v" style="font-size:50px">${hr.p10}–${hr.p90} <span style="font-size:22px;color:rgba(255,255,255,.70);font-weight:900">bpm</span></div>
+          <div class="s">This is where most of your sessions lived.</div>
+        </div>
+        <div class="card stat">
+          <div class="k">Lowest → Highest avg HR</div>
+          <div class="v" style="font-size:50px">${hr.minAvg}–${hr.maxAvg} <span style="font-size:22px;color:rgba(255,255,255,.70);font-weight:900">bpm</span></div>
+          <div class="s">Easy days vs. hard days, captured in averages.</div>
+        </div>
+        <div class="card stat">
+          <div class="k">Peak max HR</div>
+          <div class="v" style="font-size:50px">${hr.peakMaxHr ?? "—"} <span style="font-size:22px;color:rgba(255,255,255,.70);font-weight:900">bpm</span></div>
+          <div class="s">${hr.peakMaxHr ? "Highest recorded max HR." : "Max HR not available."}</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:8px">
+        <div style="font-size:15px;color:rgba(255,255,255,.70);letter-spacing:.65px;text-transform:uppercase;font-weight:900;margin-bottom:10px">What this suggests</div>
+        <div style="color:rgba(255,255,255,.86);font-size:24px;line-height:1.35">
+          <div style="margin-bottom:8px">• ${escapeHtml(intensityLine)}</div>
+          <div style="margin-bottom:8px">• ${escapeHtml(spreadLine)}</div>
+          <div style="margin-bottom:8px">• ${escapeHtml(gapLine)}</div>
+          <div>• ${escapeHtml(peakLine)}</div>
+        </div>
+      </div>
+    `;
+    return shell({ year: sum.year, title:"HEART", subtitle:"RATE", theme:"red", bodyHtml: body, footerRight:"Shown if HR data exists" });
+  }
+
+  
+  function slideSummary(sum, unitMode){
+    const dist = `${formatDistance(sum.totalDistanceKm, unitMode)} ${distanceUnit(unitMode)}`;
+    const elev = `${formatElevation(sum.totalElevM, unitMode)} ${elevationUnit(unitMode)}`;
+    const hours = `${formatHours(sum.totalTimeSec)} h`;
+    const moving = sum.totalMovingSec > 0 ? `${formatHours(sum.totalMovingSec)} h` : "—";
+
+    const bestDow = dowLabels[sum.bestDowIdx];
+    const bestWeek = sum.bestWeek
+      ? `${formatDistance(sum.bestWeek.distKm, unitMode)} ${distanceUnit(unitMode)} (wk of ${sum.bestWeek.key})`
+      : "—";
+
+    const top3 = sum.topTypes.slice(0,3).map((t,i)=>{
+      const metric = (t.distanceKm > 0.1)
+        ? `${formatDistance(t.distanceKm, unitMode)} ${distanceUnit(unitMode)}`
+        : `${formatHours(t.timeSec)} h`;
+      return `<div class="li">
+        <div class="left">
+          <div class="rank">#${i+1}</div>
+          <div class="ico">${sportIcon(t.type)}</div>
+          <div class="sport"><b>${escapeHtml(t.type)}</b><span>${t.count.toLocaleString()} activities</span></div>
+        </div>
+        <div class="metric">${metric}</div>
+      </div>`;
+    }).join("");
+
+    const body = `
+      <p class="heroSub">A year of showing up — carrying the work forward.</p>
+
+      <div class="grid3">
+        <div class="card stat glow">
+          <div class="k">Distance</div>
+          <div class="v" style="font-size:58px">${dist}</div>
+          <div class="s"><span style="color:rgba(255,255,255,.72)">${distanceContext(sum.totalDistanceKm, unitMode)}</span></div>
+        </div>
+        <div class="card stat glow">
+          <div class="k">Time (Elapsed)</div>
+          <div class="v" style="font-size:58px">${hours}</div>
+          <div class="s">Moving time was <b style="color:rgba(255,255,255,.92)">${moving}</b>, which is the closest signal to true effort.</div>
+        </div>
+        <div class="card stat glow">
+          <div class="k">Elevation</div>
+          <div class="v" style="font-size:58px">${elev}</div>
+          <div class="s"><span style="color:rgba(255,255,255,.72)">${elevationContext(sum.totalElevM, unitMode)}</span></div>
+        </div>
+      </div>
+
+      <div class="grid2" style="margin-top:8px">
+        <div class="card stat glow">
+          <div class="k">Consistency</div>
+          <div class="v" style="font-size:64px">${sum.activeDays} <span style="font-size:26px;color:rgba(255,255,255,.70);font-weight:900">active days</span></div>
+          <div class="s">Best streak: <b style="color:rgba(255,255,255,.92)">${sum.bestStreak}</b> • Natural training day: <b style="color:rgba(255,255,255,.92)">${bestDow}</b>.</div>
+        </div>
+        <div class="card stat glow">
+          <div class="k">Peak Week</div>
+          <div class="v" style="font-size:42px">${bestWeek}</div>
+          <div class="s">Your biggest distance week — a clear training high point.</div>
+        </div>
+      </div>
+
+      <div class="card glow" style="margin-top:8px">
+        <div style="font-size:15px;color:rgba(255,255,255,.70);letter-spacing:.65px;text-transform:uppercase;font-weight:900;margin-bottom:12px">Top Sports (Top 3)</div>
+        <div class="list">${top3 || ""}</div>
+      </div>
+    `;
+
+    return shell({
+      year: sum.year,
+      title:"YEAR",
+      subtitle:"SUMMARY",
+      bodyHtml: body,
+      footerLeft: "#StravaYearInReview",
+      footerRight: ""
+    });
+  }
+
+
+  // ---- Build slides ----
+  function buildSlides(sum, unitMode){
+    const s = [];
+    const t = [];
+    function push(html, title){ s.push(html); t.push(title); }
+
+    push(slideCover(sum, unitMode), "Cover");
+    push(slideTopSports(sum, unitMode), "Top Sports");
+    push(slideHighlights(sum, unitMode), "Big Days");
+    push(slideConsistency(sum), "Consistency");
+    push(slideMonthlyDistance(sum, unitMode), "Monthly Distance");
+    push(slideMonthlyTime(sum), "Monthly Time");
+    push(slideMonthlyElevation(sum, unitMode), "Monthly Climbing");
+    push(slidePeakWeek(sum, unitMode), "Peak Week");
+
+    const rp = slideRunPace(sum);
+    if(rp) push(rp, "Run Pace");
+
+    const hr = slideHeartRate(sum);
+    if(hr) push(hr, "Heart Rate");
+
+    while(s.length < 9){
+      push(shell({
+        year: sum.year,
+        title:"MORE",
+        subtitle:"INSIGHTS",
+        bodyHtml: `
+          <p class="heroSub">Want deeper slides (segments, PRs, routes, heatmaps, gear, locations)? Tell me what you track and I’ll add it.</p>
+          <div class="grid2">
+            <div class="card stat">
+              <div class="k">Activities</div>
+              <div class="v">${sum.activityCount.toLocaleString()}</div>
+              <div class="s">You stacked this many sessions in ${sum.year}.</div>
+            </div>
+            <div class="card stat">
+              <div class="k">Best Month</div>
+              <div class="v">${sum.bestMonthLabel}</div>
+              <div class="s">This month delivered your biggest distance volume.</div>
+            </div>
+          </div>
+        `,
+        footerRight:"Auto-fill slide"
+      }), "Extra Insights");
+    }
+
+    push(slideSummary(sum, unitMode), "Summary");
+
+    return { slides:s, titles:t };
+  }
+
+  // ---- Render to preview (maximize screen) ----
+  function mountSlide(index){
+    const mount = $("storyMount");
+    mount.innerHTML = slides[index];
+    const story = mount.querySelector(".story");
+    applyScale(story);
+    $("slideMeta").textContent = `${index+1}/${slides.length} • ${slideTitles[index] || ""}`;
+  }
+
+  function applyScale(storyEl){
+    const stage = $("stage");
+    if(!storyEl || !stage) return;
+
+    const padding = 6;
+    const availW = stage.clientWidth - padding*2;
+    const availH = stage.clientHeight - padding*2;
+
+    // Fit-to-screen scale (desktop is slightly larger by default)
+    let fit = Math.min(availW / 1080, availH / 1920);
+    fit *= (window.innerWidth < 600) ? 1.06 : 1.18;
+
+    // Store base scale so user zoom is always relative to "fit"
+    baseScale = Math.max(0.05, fit);
+
+    // Final scale includes user zoom multiplier
+    const scale = clamp(baseScale * userZoom, 0.05, ZOOM_MAX);
+
+    storyEl.style.transform = `scale(${scale})`;
+  }
+
+  window.addEventListener("resize", () => {
+    const story = $("storyMount").querySelector(".story");
+    if(story) applyScale(story);
+  });
+
+  function updateNav(){
+    $("prevBtn").disabled = (slides.length === 0 || currentIndex === 0);
+    $("nextBtn").disabled = (slides.length === 0 || currentIndex === slides.length - 1);
+    $("downloadCurrentBtn").disabled = slides.length === 0;
+    $("downloadAllBtn").disabled = slides.length === 0;
+    if($("mDownloadCurrentBtn")) $("mDownloadCurrentBtn").disabled = slides.length === 0;
+    if($("mDownloadAllBtn")) $("mDownloadAllBtn").disabled = slides.length === 0;
+  }
+
+    // Zoom controls enabled only when slides exist
+    const zDisabled = !(slides.length === 0);
+    if($("zoomInBtn")) $("zoomInBtn").disabled = zDisabled;
+    if($("zoomOutBtn")) $("zoomOutBtn").disabled = zDisabled;
+
+
+  // ---- Generate ----
+  $("generateBtn").addEventListener("click", () => {
+    const year = Number($("yearSelect").value);
+    const unitMode = $("unitSelect").value;
+
+    if(!Number.isFinite(year)){
+      setStatus("Choose a year first.");
+      return;
+    }
+
+    const sum = summarizeYear(year);
+    if(!sum.yearActs.length){
+      setStatus(`No activities found for ${year}.`);
+      return;
+    }
+
+    const pack = buildSlides(sum, unitMode);
+    slides = pack.slides;
+    slideTitles = pack.titles;
+
+    setZoom(1);
+
+    currentIndex = 0;
+    mountSlide(currentIndex);
+    updateNav();
+
+    setStatus(
+      `Generated ${slides.length} slides for ${year}.\n` +
+      `Charts are maximized and preview scales to your screen.\n` +
+      `Use Prev/Next and Download.`
+    );
+  });
+
+  // ---- Navigation ----
+  $("prevBtn").addEventListener("click", () => {
+    if(currentIndex <= 0) return;
+    currentIndex--;
+    mountSlide(currentIndex);
+    updateNav();
+  });
+  $("nextBtn").addEventListener("click", () => {
+    if(currentIndex >= slides.length - 1) return;
+    currentIndex++;
+    mountSlide(currentIndex);
+    updateNav();
+  });
+
+  // ---- Export
+
+  // ---- Preview zoom controls ----
+  function bumpZoom(delta){
+    setZoom(userZoom + delta);
+  }
+
+  $("zoomInBtn")?.addEventListener("click", () => bumpZoom(0.1));
+  $("zoomOutBtn")?.addEventListener("click", () => bumpZoom(-0.1));
+  
+  // Ctrl/⌘ + wheel to zoom the preview
+  $("stage").addEventListener("wheel", (e) => {
+    if(!(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault();
+    const dir = (e.deltaY > 0) ? -1 : 1;
+    bumpZoom(dir * 0.06);
+  }, { passive:false });
+
+  // Pinch-to-zoom (basic) for touch devices
+  (function(){
+    const stage = $("stage");
+    let pinchStart = null;
+
+    function dist(t1, t2){
+      const dx = t1.clientX - t2.clientX;
+      const dy = t1.clientY - t2.clientY;
+      return Math.hypot(dx, dy);
+    }
+
+    stage.addEventListener("touchstart", (e) => {
+      if(e.touches && e.touches.length === 2){
+        pinchStart = { d: dist(e.touches[0], e.touches[1]), z: userZoom };
+      }
+    }, { passive:true });
+
+    stage.addEventListener("touchmove", (e) => {
+      if(!pinchStart) return;
+      if(!(e.touches && e.touches.length === 2)) return;
+      const dNow = dist(e.touches[0], e.touches[1]);
+      const ratio = dNow / pinchStart.d;
+      setZoom(pinchStart.z * ratio);
+    }, { passive:true });
+
+    stage.addEventListener("touchend", () => { pinchStart = null; }, { passive:true });
+    stage.addEventListener("touchcancel", () => { pinchStart = null; }, { passive:true });
+  })();
+
+  // Double-tap to reset (mobile convenience)
+  (function(){
+    const stage = $("stage");
+    let lastTap = 0;
+    stage.addEventListener("touchend", () => {
+      const now = Date.now();
+      if(now - lastTap < 320){
+        setZoom(1);
+        lastTap = 0;
+      } else {
+        lastTap = now;
+      }
+    }, { passive:true });
+  })();
+
+  // Keep zoom readout correct
+  updateZoomUI();
+
+  // ---- Export (exact 1080x1920) ----
+  async function renderSlideToCanvas(slideHtml){
+    const off = document.createElement("div");
+    off.style.position = "fixed";
+    off.style.left = "-10000px";
+    off.style.top = "0";
+    off.style.width = "1080px";
+    off.style.height = "1920px";
+    off.style.overflow = "hidden";
+    off.style.zIndex = "-1";
+    off.innerHTML = slideHtml;
+    document.body.appendChild(off);
+
+    const node = off.querySelector(".story");
+
+    node.style.transform = "none";
+    node.style.width = "1080px";
+    node.style.height = "1920px";
+
+    if(document.fonts && document.fonts.ready){
+      try{ await document.fonts.ready; } catch(e){}
+    }
+
+    const imgs = Array.from(node.querySelectorAll("img"));
+    await Promise.all(imgs.map(img => {
+      if(img.complete && img.naturalWidth > 0){
+        return img.decode ? img.decode().catch(()=>{}) : Promise.resolve();
+      }
+      return new Promise(resolve => {
+        img.onload = () => (img.decode ? img.decode().catch(()=>{}).finally(resolve) : resolve());
+        img.onerror = () => resolve();
+      });
+    }));
+
+    await new Promise(r => setTimeout(r, 60));
+
+    const canvas = await html2canvas(node, {
+      backgroundColor: null,
+      scale: 2,
+      useCORS: true,
+      windowWidth: 1080,
+      windowHeight: 1920,
+      scrollX: 0,
+      scrollY: 0
+    });
+
+    document.body.removeChild(off);
+    return canvas;
+  }
+
+  function downloadCanvas(canvas, filename){
+    const link = document.createElement("a");
+    link.download = filename;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  }
+
+  function slideFileName(idx){
+    const year = $("yearSelect").value || "YEAR";
+    const label = (slideTitles[idx] || `slide-${idx+1}`).toLowerCase().replace(/[^a-z0-9]+/g,"-");
+    return `strava-year-in-review-${year}-${String(idx+1).padStart(2,"0")}-${label}.png`;
+  }
+
+  $("downloadCurrentBtn").addEventListener("click", async () => {
+    if(!slides.length) return;
+    setStatus(`Rendering slide ${currentIndex+1}/${slides.length}…`);
+    const canvas = await renderSlideToCanvas(slides[currentIndex]);
+    downloadCanvas(canvas, slideFileName(currentIndex));
+    setStatus(`Downloaded slide ${currentIndex+1}.`);
+  });
+
+  // ---- Mobile action bar mirrors download buttons ----
+  if($("mDownloadCurrentBtn")){
+    $("mDownloadCurrentBtn").addEventListener("click", () => $("downloadCurrentBtn").click());
+  }
+  if($("mDownloadAllBtn")){
+    $("mDownloadAllBtn").addEventListener("click", () => $("downloadAllBtn").click());
+  }
+
+  $("downloadAllBtn").addEventListener("click", async () => {
+    if(!slides.length) return;
+    $("downloadAllBtn").disabled = true;
+    $("downloadCurrentBtn").disabled = true;
+
+    try{
+      for(let i=0;i<slides.length;i++){
+        setStatus(`Rendering slide ${i+1}/${slides.length}…`);
+        const canvas = await renderSlideToCanvas(slides[i]);
+        downloadCanvas(canvas, slideFileName(i));
+        await new Promise(r => setTimeout(r, 250));
+      }
+      setStatus(`Downloaded all ${slides.length} slides.`);
+    } finally {
+      $("downloadAllBtn").disabled = false;
+      $("downloadCurrentBtn").disabled = false;
+    }
+  });
+
+  const genObserver = new MutationObserver(() => {
+    $("generateBtn").disabled = $("yearSelect").disabled;
+  });
+  genObserver.observe($("yearSelect"), { attributes: true, childList: true });
+</script>
+
+<script>
+(function(){
+  const howModal = document.getElementById('howModal');
+  const howCloseBtn = document.getElementById('howCloseBtn');
+  const howOpenBtn = document.getElementById('howToBtn');
+  if(!howModal || !howCloseBtn || !howOpenBtn) return;
+
+  function openHow(){
+    howModal.classList.add('open');
+    howModal.setAttribute('aria-hidden','false');
+    document.body.classList.add('modalOpen');
+    howCloseBtn.focus({preventScroll:true});
+  }
+  function closeHow(){
+    howModal.classList.remove('open');
+    howModal.setAttribute('aria-hidden','true');
+    document.body.classList.remove('modalOpen');
+  }
+
+  howOpenBtn.addEventListener('click', openHow);
+  howCloseBtn.addEventListener('click', closeHow);
+  howModal.addEventListener('click', (e)=>{ if(e.target === howModal) closeHow(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && howModal.classList.contains('open')) closeHow(); });
+})();
+</script>
+
+</body>
+</html>
