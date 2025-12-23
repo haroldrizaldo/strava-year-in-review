@@ -975,6 +975,10 @@ body.modalOpen{ overflow:hidden; }
       <br>• We ignore flagged activities if “Flagged” exists.
       <br>• Distance assumed km (typical Strava export). If yours is meters, tell me and I’ll adjust.
       <br>• Pace/HR slides appear only if relevant columns exist in your CSV.
+    
+      <span id="iosNote" style="display:none">
+        <br>• On iOS devices, images must be downloaded one by one.
+      </span>
     </p>
 
     <div class="status" id="status">Load a CSV to begin.</div>
@@ -1000,7 +1004,7 @@ body.modalOpen{ overflow:hidden; }
     </div>
 
     <div class="mobileBar" id="mobileBar">
-      <button class="primary" id="mDownloadCurrentBtn" disabled>Download</button>
+      <button class="primary" id="mDownloadCurrentBtn" disabled>Download Current</button>
       <button id="mDownloadAllBtn" disabled>Download all</button>
     </div>
   </main>
@@ -2310,19 +2314,24 @@ body.modalOpen{ overflow:hidden; }
   updateZoomUI();
 
 
-// If iOS supports sharing, label download buttons as "Share" for clarity
-if (canNativeShare()){
+// Label export buttons and handle iOS constraints
+(function(){
   const d1 = $("downloadCurrentBtn");
   const d2 = $("mDownloadCurrentBtn");
-  const a1 = $("downloadAllBtn");
-  const a2 = $("mDownloadAllBtn");
-  if(d1) d1.textContent = "Share";
-  if(d2) d2.textContent = "Share";
-  if(a1) a1.textContent = "Share all";
-  if(a2) a2.textContent = "Share all";
-}
+  if(d1) d1.textContent = "Download Current";
+  if(d2) d2.textContent = "Download Current";
 
-  // ---- Export (exact 1080x1920) ----
+  // iOS: images should be downloaded/shared one by one, so hide "Download all"
+  if (isIOS()){
+    if($("downloadAllBtn")) $("downloadAllBtn").style.display = "none";
+    if($("mDownloadAllBtn")) $("mDownloadAllBtn").style.display = "none";
+
+    const iosNote = document.getElementById("iosNote");
+    if (iosNote) iosNote.style.display = "inline";
+  }
+})();
+
+// ---- Export (exact 1080x1920) ----
   async function renderSlideToCanvas(slideHtml){
     const off = document.createElement("div");
     off.style.position = "fixed";
