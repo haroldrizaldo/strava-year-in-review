@@ -7,6 +7,7 @@
 
   <!-- Export -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
   <style>
     :root{
@@ -2308,12 +2309,17 @@ body.modalOpen{ overflow:hidden; }
   // Keep zoom readout correct
   updateZoomUI();
 
+
 // If iOS supports sharing, label download buttons as "Share" for clarity
 if (canNativeShare()){
   const d1 = $("downloadCurrentBtn");
   const d2 = $("mDownloadCurrentBtn");
+  const a1 = $("downloadAllBtn");
+  const a2 = $("mDownloadAllBtn");
   if(d1) d1.textContent = "Share";
   if(d2) d2.textContent = "Share";
+  if(a1) a1.textContent = "Share all";
+  if(a2) a2.textContent = "Share all";
 }
 
   // ---- Export (exact 1080x1920) ----
@@ -2391,6 +2397,42 @@ async function shareCanvasIOS(canvas, filename){
   }
 }
 
+// Share ALL slides on iOS by zipping PNGs into a single file (more reliable than sharing many files)
+async function shareAllSlidesIOS(slideHtmlList, fileNameBase){
+  if(typeof JSZip === "undefined"){
+    throw new Error("JSZip not loaded");
+  }
+  const zip = new JSZip();
+
+  for(let i=0;i<slideHtmlList.length;i++){
+    setStatus(`Rendering slide ${i+1}/${slideHtmlList.length}…`);
+    const canvas = await renderSlideToCanvas(slideHtmlList[i]);
+    const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
+    if(!blob) throw new Error("Failed to create PNG blob");
+    const fname = slideFileName(i);
+    zip.file(fname, blob);
+    // small breather to keep UI responsive
+    await new Promise(r => setTimeout(r, 30));
+  }
+
+  setStatus("Packaging slides…");
+  const zipBlob = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 6 } });
+
+  const year = $("yearSelect").value || "YEAR";
+  const zipName = `${fileNameBase || "strava-year-in-review"}-${year}.zip`;
+  const file = new File([zipBlob], zipName, { type: "application/zip" });
+
+  try{
+    await navigator.share({
+      files: [file],
+      title: "Strava Year in Review",
+      text: "All slides (zipped) — Strava Year in Review"
+    });
+  } catch(err){
+    console.debug("Share cancelled or failed", err);
+  }
+}
+
   function downloadCanvas(canvas, filename){
     const link = document.createElement("a");
     link.download = filename;
@@ -2428,26 +2470,43 @@ $("downloadCurrentBtn").addEventListener("click", async () => {
     $("mDownloadAllBtn").addEventListener("click", () => $("downloadAllBtn").click());
   }
 
-  $("downloadAllBtn").addEventListener("click", async () => {
-    if(!slides.length) return;
+  
+$("downloadAllBtn").addEventListener("click", async () => {
+  if(!slides.length) return;
+
+  // iOS: share a single ZIP containing all PNG slides
+  if (canNativeShare()){
     $("downloadAllBtn").disabled = true;
     $("downloadCurrentBtn").disabled = true;
-
     try{
-      for(let i=0;i<slides.length;i++){
-        setStatus(`Rendering slide ${i+1}/${slides.length}…`);
-        const canvas = await renderSlideToCanvas(slides[i]);
-        downloadCanvas(canvas, slideFileName(i));
-        await new Promise(r => setTimeout(r, 250));
-      }
-      setStatus(`Downloaded all ${slides.length} slides.`);
+      await shareAllSlidesIOS(slides, "strava-year-in-review");
+      setStatus("Shared all slides (ZIP) via iOS share sheet.");
     } finally {
       $("downloadAllBtn").disabled = false;
       $("downloadCurrentBtn").disabled = false;
     }
-  });
+    return;
+  }
 
-  const genObserver = new MutationObserver(() => {
+  // Default: download each PNG one-by-one
+  $("downloadAllBtn").disabled = true;
+  $("downloadCurrentBtn").disabled = true;
+
+  try{
+    for(let i=0;i<slides.length;i++){
+      setStatus(`Rendering slide ${i+1}/${slides.length}…`);
+      const canvas = await renderSlideToCanvas(slides[i]);
+      downloadCanvas(canvas, slideFileName(i));
+      await new Promise(r => setTimeout(r, 250));
+    }
+    setStatus(`Downloaded all ${slides.length} slides.`);
+  } finally {
+    $("downloadAllBtn").disabled = false;
+    $("downloadCurrentBtn").disabled = false;
+  }
+});
+
+const genObserver = new MutationObserver(() => {
     $("generateBtn").disabled = $("yearSelect").disabled;
   });
   genObserver.observe($("yearSelect"), { attributes: true, childList: true });
